@@ -32,6 +32,10 @@ code {
         cursor: pointer;
         transition: .3s;
 
+        &:not(:first-of-type) {
+          width: 25%;
+        }
+
         img {
           max-width: 10px;
           margin-left: 10px;

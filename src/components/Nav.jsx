@@ -75,7 +75,7 @@ export default function Nav({
               onChange={() => {
                 setFilters("fetch");
               }}
-              type={selectedColumn !== "name" && "number"}
+              type={selectedColumn !== "name" ? "number" : ""}
             />
           </Col>
         </Row>

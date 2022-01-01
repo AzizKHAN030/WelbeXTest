@@ -29,11 +29,7 @@ export default function DataTable({
               >
                 {head.name}
                 {selectSort === head.type && (
-                  <img
-                    src={arrow}
-                    alt="arrow"
-                    className={order ? "asc" : "desc"}
-                  />
+                  <img src={arrow} alt="arrow" className={order && "asc"} />
                 )}
               </th>
             ))}

@@ -23,14 +23,6 @@ function App() {
   const onSelectSort = (type) => {
     setSelectSort(type);
     setOrder(!order);
-    fetchData({
-      type,
-      order: order ? "desc" : "asc",
-      column: selectedColumn,
-      filterType: selectedType,
-      value: searchVal,
-      page: activePage,
-    });
   };
 
   const onSelectFilter = (obj) => {
@@ -43,38 +35,13 @@ function App() {
     } else {
       setSelectedType(obj.filterType);
     }
+
     setSelectedColumn(obj.column);
     setSearchVal(obj.value);
-    if (obj.fetch === "fetch" || obj.value) {
-      setActivePage(1);
-      fetchData({
-        type: selectSort,
-        order: order ? "asc" : "desc",
-        column: obj.column,
-        filterType: obj.filterType,
-        value: obj.value,
-        page: 1,
-      });
-      getRows({
-        type: selectSort,
-        order: order ? "asc" : "desc",
-        column: obj.column,
-        filterType: obj.filterType,
-        value: obj.value,
-      });
-    }
   };
 
   const onChangePage = (page) => {
     setActivePage(page);
-    fetchData({
-      type: selectSort,
-      order: order ? "asc" : "desc",
-      column: selectedColumn,
-      filterType: selectedType,
-      value: searchVal,
-      page,
-    });
   };
 
   const fetchData = async (obj) => {
@@ -82,20 +49,14 @@ function App() {
       obj.value
         ? await axios
             .get(
-              `/api/cities?column=${obj.column}&filter=${
-                obj.filterType
-              }&value=${obj.value}&orderBy=${obj.type}&order=${
-                obj.order
-              }&page=${!obj.page ? 1 : obj.page}`
+              `/api/cities?column=${obj.column}&filter=${obj.filterType}&value=${obj.value}&orderBy=${obj.type}&order=${obj.order}&page=${activePage}`
             )
             .then((res) => {
               setCities([...res.data]);
             })
         : await axios
             .get(
-              `/api/cities?orderBy=${obj.type}&order=${obj.order}&page=${
-                !obj.page ? 1 : obj.page
-              }`
+              `/api/cities?orderBy=${obj.type}&order=${obj.order}&page=${activePage}`
             )
             .then((res) => {
               setCities([...res.data]);
@@ -108,19 +69,33 @@ function App() {
         });
     }
   };
+
   const getRows = async (obj) => {
     obj.value
       ? await axios
           .get(
-            `/api/rows?column=${obj.column}&filter=${obj.filterType}&value=${obj.value}&orderBy=${obj.type}&order=${obj.order}`
+            `/api/rows?column=${obj.column}&filter=${obj.filterType}&value=${obj.value}&orderBy=${obj.type}`
           )
-          .then((res) => {
-            setRows(res.data[0].count);
+          .then(({ data }) => {
+            setRows(data[0].count);
           })
-      : await axios.get(`/api/rows`).then((res) => {
-          setRows(res.data[0].count);
+      : await axios.get(`/api/rows`).then(({ data }) => {
+          setRows(data[0].count);
         });
   };
+
+  React.useEffect(() => {
+    if (searchVal) {
+      setActivePage(1);
+    }
+    getRows({
+      type: selectSort,
+      order: order ? "asc" : "desc",
+      column: selectedColumn,
+      filterType: selectedType,
+      value: searchVal,
+    });
+  }, [searchVal, selectedType]);
 
   React.useEffect(() => {
     fetchData({
@@ -129,15 +104,10 @@ function App() {
       column: selectedColumn,
       filterType: selectedType,
       value: searchVal,
+      activePage,
     });
-    getRows({
-      type: selectSort,
-      order: order ? "asc" : "desc",
-      column: selectedColumn,
-      filterType: selectedType,
-      value: searchVal,
-    });
-  }, []);
+  }, [order, searchVal, activePage, selectedType]);
+
   return (
     <div className="App">
       <Nav
